@@ -40,11 +40,11 @@ export default defineConfig({
   server:{
     port:8111,
     proxy:{
-      // todo：等待后端配置
-      '/sc':{
-        target:'http://localhost:8100',
+      // 后端配置
+      '/api':{
+        target:'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/sc/, ''),
+        rewrite: (path) => path.replace(/^\/api/, '/lims'),
       },
 
     }

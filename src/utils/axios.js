@@ -3,13 +3,14 @@ import { jwtDecode } from "jwt-decode";
 import { ElNotification } from "element-plus";
 import "element-plus/theme-chalk/el-notification.css";
 // 创建 axios 实例
-const service = axios.create({
+const myAxios = axios.create({
   timeout: 30000, // 请求超时时间
+  withCredentials: true,
 });
 const err = (error) => {
   if (error.response) {
     let data = error.response.data;
-    const token = Vue.ls.get("aToken");
+    const token = localStorage.getItem("token");
     console.log("------异常响应------", token);
     console.log("------异常响应------", error.response.status);
     switch (error.response.status) {
@@ -42,15 +43,14 @@ const err = (error) => {
 };
 
 // request interceptor
-service.interceptors.request.use(
+myAxios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
       // 如果token过期，则提醒用户重新登录，并且跳转到login界面
       const decoded = jwtDecode(token);
-      // console.log(`output->decoded`,decoded.exp)
+      // console.log("jwtDecoded", decoded);
       const timestampInSeconds = Math.floor(new Date().getTime() / 1000);
-      // console.log(`output->timestampInSeconds`,timestampInSeconds)
       if (timestampInSeconds > decoded.exp) {
         // aToken
         ElNotification({
@@ -61,13 +61,13 @@ service.interceptors.request.use(
         localStorage.removeItem("token");
         localStorage.removeItem("nickname");
         // TODO:根据配置跳转
-        location.href = "localhost:3111/login"
+        location.href = "localhost:8111/login";
         // router.push({
         //   path: "/login",
         // });
         return;
       }
-      config.headers["token"] = token; // 固定场站token
+      config.headers["token"] = token; // token
     }
 
     // 确保config.params存在
@@ -79,12 +79,12 @@ service.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // response interceptor
-service.interceptors.response.use((response) => {
+myAxios.interceptors.response.use((response) => {
   return response.data;
 }, err);
 
-export { service as axios };
+export { myAxios };

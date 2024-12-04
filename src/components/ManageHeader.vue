@@ -1,6 +1,9 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { getAction, postAction } from "@/utils/http.js";
+import { useLoginUserStore } from "@/stores/useLoginUserStore.js";
+import { userLogout } from "@/api/user.js";
+import { ElMessage } from "element-plus";
+const loginUserStore = useLoginUserStore();
 
 const router = useRouter();
 function handleClick(to) {
@@ -16,20 +19,22 @@ function handleClick(to) {
   });
 }
 
-onMounted(() => {
-  // your code
+onMounted(async () => {
+  await loginUserStore.fetchLoginUser();
+  console.log("loginUserStore.loginUser:", loginUserStore.loginUser.nickName);
 });
 
 const nickname = ref("test");
 
-const handleLogoutClick = () => {
-  localStorage.removeItem("aToken");
-  localStorage.removeItem("stationId");
-  localStorage.removeItem("nickname");
-  localStorage.removeItem("s-stationId");
-  localStorage.removeItem("s-lotId");
-  localStorage.removeItem("s-projectId");
-  localStorage.removeItem("type");
+const handleLogoutClick = async () => {
+  await userLogout().then((res) => {
+    console.log("logout res:", res);
+    ElMessage({
+      message: res.message,
+      type: "success",
+    });
+  });
+  localStorage.removeItem("token");
   router.push({
     path: "/login",
   });
@@ -39,14 +44,16 @@ const handleLogoutClick = () => {
 <template>
   <div class="header">
     <!-- Logo 图标 -->
-    <img
-        style="width: 50px"
-        src="@/assets/logo/school-logo.png"
-    />
+    <img style="width: 50px" src="@/assets/logo/school-logo.png" />
 
     <span>502实验室管理平台</span>
     <div class="function">
-      <el-button size="large" class="el-btn" color="#1890ff" @click="handleClick('/screen')">
+      <el-button
+        size="large"
+        class="el-btn"
+        color="#1890ff"
+        @click="handleClick('/screen')"
+      >
         Web大屏
         <template v-slot:icon>
           <el-icon>
@@ -55,8 +62,13 @@ const handleLogoutClick = () => {
         </template>
       </el-button>
 
-      <el-button size="large" class="el-btn" color="#1890ff" @click="handleClick()">
-        欢迎您，{{ nickname }}
+      <el-button
+        size="large"
+        class="el-btn"
+        color="#1890ff"
+        @click="handleClick()"
+      >
+        欢迎您，{{ loginUserStore.loginUser.nickName }}
         <template v-slot:icon>
           <el-icon>
             <i-ep-user></i-ep-user>
@@ -64,7 +76,12 @@ const handleLogoutClick = () => {
         </template>
       </el-button>
 
-      <el-button size="large" class="el-btn" color="#1890ff" @click="handleLogoutClick()">
+      <el-button
+        size="large"
+        class="el-btn"
+        color="#1890ff"
+        @click="handleLogoutClick()"
+      >
         退出登陆
         <template v-slot:icon>
           <el-icon>
@@ -85,7 +102,6 @@ const handleLogoutClick = () => {
   align-items: center;
   background-color: #1890ff; /* 背景色设置为蓝色 */
 }
-
 
 span {
   color: rgb(255, 255, 255);

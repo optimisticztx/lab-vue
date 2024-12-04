@@ -6,7 +6,7 @@ const router = useRouter();
 const List = reactive({ data: [] })
 List.data = computed(() => route.matched.slice(1))
 
-console.log("matched", route.matched)
+// console.log("matched", route.matched)
 </script>
 
 <template>
