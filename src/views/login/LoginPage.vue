@@ -62,7 +62,8 @@ const handleAccountLogin = () => {
           message: res.message,
           type: "error",
         });
-        if (res.message == "验证码错误或已过期") {
+        if (res.message === "验证码错误或已过期") {
+          fetchCaptcha();
         }
       }
     })

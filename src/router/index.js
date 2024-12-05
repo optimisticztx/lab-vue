@@ -80,4 +80,21 @@ index.beforeEach(async (e) => {
     localStorage.removeItem("token");
   }
 });
+// index.beforeEach((to,from,next)=>{
+//   const isAuthenticated = !!localStorage.getItem('token'); // 检查是否存在token
+//
+//   // 匹配的路由中任意一个存在需要授权的情况都需要验证权限情况
+//   if (to.matched.some(record => record.meta.requiresAuth)) {
+//     if (!isAuthenticated) {
+//       next({
+//         path: '/login',
+//         // query: { redirect: to.fullPath } // 保存目标路由以便登录后重定向
+//       });
+//     } else {
+//       next(); // 已登录，允许访问
+//     }
+//   } else {
+//     next(); // 不需要身份验证，允许访问
+//   }
+// })
 export default index;
