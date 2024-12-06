@@ -1,7 +1,8 @@
 <script setup>
-import {ElNotification, ElMessage} from "element-plus";
+import { ElNotification, ElMessage } from "element-plus";
 import "element-plus/theme-chalk/el-message.css";
-import {useAccountStore} from "@/stores/useAccountStore.js"
+import { useAccountStore } from "@/stores/useAccountStore.js";
+import { addUser, editUser } from "@/api/account.js";
 
 const accountStore = useAccountStore();
 // Props
@@ -23,45 +24,45 @@ const title = ref(accountStore.title);
 const dialogVisible = ref(false);
 const statusList = [
   {
-    id: 0,
-    name: "正常"
+    id: "0",
+    name: "正常",
   },
   {
-    id: 1,
-    name: "停用"
-  }
-]
+    id: "1",
+    name: "停用",
+  },
+];
 const sexList = [
   {
-    id: 0,
-    name: "男"
+    id: "0",
+    name: "男",
   },
   {
-    id: 1,
-    name: "女"
-  }
-]
+    id: "1",
+    name: "女",
+  },
+];
 const delFlagList = [
   {
     id: 0,
-    name: "未删除"
+    name: "未删除",
   },
   {
     id: 1,
-    name: "已删除"
-  }
-]
+    name: "已删除",
+  },
+];
 const userTypeList = [
   {
-    id: 0,
-    name: "管理员"
+    id: "0",
+    name: "管理员",
   },
   {
-    id: 1,
-    name: "普通用户"
-  }
-]
-const form = reactive({
+    id: "1",
+    name: "普通用户",
+  },
+];
+const form = ref({
   userName: "",
   nickName: "",
   sex: "",
@@ -71,7 +72,6 @@ const form = reactive({
   status: "",
   userType: "",
   delFlag: "",
-
 });
 const formRef = ref(null);
 
@@ -132,7 +132,8 @@ const rules = reactive({
       message: "请选择用户类型",
       trigger: "change",
     },
-  ], delFlag: [
+  ],
+  delFlag: [
     {
       required: false,
       message: "请选择是否删除",
@@ -143,11 +144,8 @@ const rules = reactive({
 
 // const imageUrl = ref("");
 
-
 // 挂载后的处理
-onMounted(() => {
-
-});
+onMounted(() => {});
 
 // 组件内的触发方法
 const handleClose = (done) => {
@@ -160,43 +158,40 @@ const submitForm = async (formEl) => {
     if (valid) {
       console.log("数据验证成功!");
       //   TODO: 上传数据
-
-      if (title.value === "编辑盒子信息") {
-        // putAction("/scpi/sc/box/edit", form).then((res) => {
-        //   console.log(`output->人员更新res`, res);
-        //   if (res.code == 200) {
-        //     ElMessage({
-        //       message: "更新成功！",
-        //       type: "success",
-        //     });
-        //     props.handleSuccess();
-        //     resetForm(formRef);
-        //   } else {
-        //     ElMessage({
-        //       message: "更新失败！",
-        //       type: "error",
-        //     });
-        //     resetForm(formRef);
-        //   }
-        // });
-      } else {
-        // postAction("/scpi/sc/box/add", form).then((res) => {
-        //   console.log(`output->人员新增res`, res);
-        //   if (res.code == 200) {
-        //     ElMessage({
-        //       message: "添加成功！",
-        //       type: "success",
-        //     });
-        //     props.handleSuccess();
-        //     resetForm(formRef);
-        //   } else {
-        //     ElMessage({
-        //       message: "添加失败！",
-        //       type: "error",
-        //     });
-        //     resetForm(formRef);
-        //   }
-        // });
+      if (title.value === "编辑") {
+        console.log("编辑form:", form);
+        editUser(form.value).then((res) => {
+          console.log(`output->account更新res`, res);
+          if (res.code == 200) {
+            ElMessage({
+              message: "更新成功！",
+              type: "success",
+            });
+            props.handleSuccess();
+          } else {
+            ElMessage({
+              message: "更新失败！",
+              type: "error",
+            });
+          }
+        });
+      } else if (title.value === "新增") {
+        console.log("新增form:", form);
+        addUser(form.value).then((res) => {
+          console.log(`output->account新增res`, res);
+          if (res.code === 200) {
+            ElMessage({
+              message: "添加成功！",
+              type: "success",
+            });
+          } else {
+            ElMessage({
+              message: "添加失败！",
+              type: "error",
+            });
+          }
+          props.handleSuccess();
+        });
       }
       handleClose();
     } else {
@@ -211,7 +206,6 @@ const submitForm = async (formEl) => {
 const resetForm = (formEl) => {
   if (!formEl) return;
   formEl.resetFields();
-
 };
 
 const handleAvatarSuccess = (response, uploadFile) => {
@@ -219,7 +213,7 @@ const handleAvatarSuccess = (response, uploadFile) => {
   // imageurl的图片是在内存生成的为了在用户本地预览，不是从后端请求的数据
   imageUrl.value = URL.createObjectURL(uploadFile.raw);
   if (response.code == 200) {
-    form.boxImg = response.result;
+    form.value.boxImg = response.result;
     ElMessage({
       message: "上传成功！",
       type: "success",
@@ -242,122 +236,142 @@ const beforeAvatarUpload = (rawFile) => {
   // }
   return true;
 };
-const handleEdit = (index, row) => {
-  console.log(`output->add:index,row`, index, row);
-  title.value = "编辑盒子信息";
-  // form.boxId = row.boxId;
-  // form.boxName = row.boxName;
-  // form.boxSn = row.boxSn;
-  // form.boxUrl = row.boxUrl;
-  // form.boxCompany = row.boxCompany;
-  // form.boxSpeakerId = row.boxSpeakerId;
-  // form.boxStationId = row.boxStationId;
-  // form.boxGridId = row.boxGridId;
-  // form.boxImg = row.boxImg;
+const handleEdit = () => {
+  title.value = accountStore.title;
+  form.value = accountStore.account;
   dialogVisible.value = true;
 };
-const reset = () => {
-  title.value = "新增";
-  resetForm(formRef.value);
-  // 重置其他相关数据
-  // form.boxId = "";
-  // form.boxName = "";
-
+const handleAdd = () => {
+  title.value = accountStore.title;
+  form.value = accountStore.account;
+  dialogVisible.value = true;
 };
+
 defineExpose({
   dialogVisible,
   handleEdit,
-  reset,
+  handleAdd,
 });
 </script>
 <template>
   <el-dialog
-      v-model="dialogVisible"
-      :title="title"
-      width="800px"
-      :before-close="handleClose"
+    v-model="dialogVisible"
+    :title="title"
+    width="720"
+    :before-close="handleClose"
+    :lock-scroll="false"
   >
     <el-form
-        ref="formRef"
-        class="form-padding"
-        :model="form"
-        :rules="rules"
-        label-position="right"
-        label-width="auto"
+      ref="formRef"
+      class="form-padding"
+      :model="form"
+      :rules="rules"
+      label-position="right"
+      label-width="auto"
     >
-      <el-form-item label="用户名：" prop="userName" style="margin-left:50px;">
-        <el-input v-model="form.userName" style="width: 240px"/>
+      <el-form-item label="用户名：" prop="userName" style="margin-left: 50px">
+        <el-input
+          v-model="form.userName"
+          placeholder="请输入用户名"
+          style="width: 240px"
+        />
       </el-form-item>
-      <el-form-item label="昵称：" prop="nickName"style="margin-left:50px;">
-        <el-input v-model="form.nickName" style="width: 240px"/>
+      <el-form-item label="昵称：" prop="nickName" style="margin-left: 50px">
+        <el-input
+          v-model="form.nickName"
+          placeholder="请输入昵称"
+          style="width: 240px"
+        />
       </el-form-item>
-      <el-form-item label="性别：" prop="sex"style="margin-left:50px;">
+      <el-form-item label="性别：" prop="sex" style="margin-left: 50px">
         <el-select
-            v-model="form.sex"
-            placeholder="请选择性别"
-            style="width: 240px"
-            filterable
+          v-model="form.sex"
+          placeholder="请选择性别"
+          style="width: 240px"
+          filterable
         >
           <el-option
-              v-for="item in sexList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
+            v-for="item in sexList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="密码：" prop="password" style="margin-left:50px;">
-        <el-input v-model="form.password" style="width: 240px"/>
-      </el-form-item>
-      <el-form-item label="邮箱：" prop="email" style="margin-left:50px;">
-        <el-input v-model="form.email" style="width: 240px"/>
-      </el-form-item>
-      <el-form-item label="手机号：" prop="phonenumber" style="margin-left:50px;">
-        <el-input v-model="form.phonenumber" style="width: 240px"/>
+      <el-form-item label="密码：" prop="password" style="margin-left: 50px">
+        <el-input
+          v-model="form.password"
+          placeholder="请输入密码"
+          style="width: 240px"
+          type="password"
+        />
       </el-form-item>
 
-      <el-form-item label="账号状态：" prop="status" style="margin-left:50px;">
+      <el-form-item label="邮箱：" prop="email" style="margin-left: 50px">
+        <el-input
+          v-model="form.email"
+          placeholder="请输入邮箱"
+          style="width: 240px"
+        />
+      </el-form-item>
+      <el-form-item
+        label="手机号："
+        prop="phonenumber"
+        style="margin-left: 50px"
+      >
+        <el-input
+          v-model="form.phonenumber"
+          placeholder="请输入手机号"
+          style="width: 240px"
+        />
+      </el-form-item>
+
+      <el-form-item label="账号状态：" prop="status" style="margin-left: 50px">
         <el-select
-            v-model="form.status"
-            placeholder="请选择帐号状态"
-            style="width: 240px"
-            filterable
+          v-model="form.status"
+          placeholder="请选择帐号状态"
+          style="width: 240px"
+          filterable
         >
           <el-option
-              v-for="item in statusList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
+            v-for="item in statusList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="用户类型：" prop="userType"style="margin-left:50px;">
+      <el-form-item
+        label="用户类型："
+        prop="userType"
+        style="margin-left: 50px"
+      >
         <el-select
-            v-model="form.userType"
-            placeholder="请选择用户类型"
-            style="width: 240px"
-            filterable
+          v-model="form.userType"
+          placeholder="请选择用户类型"
+          style="width: 240px"
+          filterable
         >
           <el-option
-              v-for="item in userTypeList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
+            v-for="item in userTypeList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="是否删除：" prop="delFlag"style="margin-left:50px;">
+      <el-form-item label="是否删除：" prop="delFlag" style="margin-left: 50px">
         <el-select
-            v-model="form.delFlag"
-            placeholder="请选择是否删除"
-            style="width: 240px"
-            filterable
+          v-model="form.delFlag"
+          placeholder="请选择是否删除"
+          style="width: 240px"
+          filterable
         >
           <el-option
-              v-for="item in delFlag"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
+            v-for="item in delFlagList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
@@ -383,7 +397,9 @@ defineExpose({
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button v-if="title==='新增' " @click="resetForm(formRef)">重置</el-button>
+        <el-button v-if="title === '新增'" @click="resetForm(formRef)"
+          >重置</el-button
+        >
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="submitForm(formRef)">
           确定

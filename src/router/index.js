@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useLoginUserStore } from "@/stores/useLoginUserStore.js";
 import { userLogout } from "@/api/user.js";
-import { ElMessage } from "element-plus";
+import {ElMessage, ElNotification} from "element-plus";
+import {jwtDecode} from "jwt-decode";
 const index = createRouter({
   history: createWebHistory(),
   routes: [
@@ -80,21 +81,44 @@ index.beforeEach(async (e) => {
     localStorage.removeItem("token");
   }
 });
-// index.beforeEach((to,from,next)=>{
-//   const isAuthenticated = !!localStorage.getItem('token'); // 检查是否存在token
-//
-//   // 匹配的路由中任意一个存在需要授权的情况都需要验证权限情况
-//   if (to.matched.some(record => record.meta.requiresAuth)) {
-//     if (!isAuthenticated) {
-//       next({
-//         path: '/login',
-//         // query: { redirect: to.fullPath } // 保存目标路由以便登录后重定向
-//       });
-//     } else {
-//       next(); // 已登录，允许访问
-//     }
-//   } else {
-//     next(); // 不需要身份验证，允许访问
-//   }
-// })
+index.beforeEach((to,from,next)=>{
+  const token = localStorage.getItem('token');
+  const isAuthenticated = !!localStorage.getItem('token'); // 检查是否存在token
+
+  // 匹配的路由中任意一个存在需要授权的情况都需要验证权限情况
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!isAuthenticated) {
+      ElMessage({
+        message:"请先登录！",
+        type:"error"
+      })
+      next({
+        path: '/login',
+        // query: { redirect: to.fullPath } // 保存目标路由以便登录后重定向
+      });
+    } else {
+      const decoded = jwtDecode(token);
+      // console.log("jwtDecoded", decoded);
+      const timestampInSeconds = Math.floor(new Date().getTime() / 1000);//当前时间转化为UNIX时间戳
+      // console.log("time-seconds:",timestampInSeconds)
+      // console.log("decoded.exp:",decoded.exp)
+      if (timestampInSeconds > decoded.exp){  //token过期
+        localStorage.removeItem('token'); //过期移除token
+        ElNotification({
+          title: "登录过期",
+          message: "登录状态过期，请重新登录！",
+          type: "error",
+        });
+        next({
+          path: '/login',
+          // query: { redirect: to.fullPath } // 保存目标路由以便登录后重定向
+        });
+      } else {
+        next(); // 已登录且未过期，允许访问
+      }
+    }
+  } else {
+    next(); // 不需要身份验证，允许访问
+  }
+})
 export default index;

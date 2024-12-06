@@ -8,6 +8,23 @@ import Icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
 // https://vite.dev/config/
 export default defineConfig({
+  server:{
+    port:8111,
+    proxy:{
+      // 后端配置
+      '/api':{
+        target:'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/lims'),
+      },
+
+    }
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve("src"),
+    },
+  },
   plugins: [
       Vue(),
     AutoImport({
@@ -37,21 +54,5 @@ export default defineConfig({
       esmExternals: true
     },
   },
-  server:{
-    port:8111,
-    proxy:{
-      // 后端配置
-      '/api':{
-        target:'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/lims'),
-      },
 
-    }
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve("src"),
-    },
-  },
 })

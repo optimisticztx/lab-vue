@@ -2,6 +2,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { ElNotification } from "element-plus";
 import "element-plus/theme-chalk/el-notification.css";
+import { useRouter } from "vue-router";
 // 创建 axios 实例
 const myAxios = axios.create({
   timeout: 30000, // 请求超时时间
@@ -52,19 +53,16 @@ myAxios.interceptors.request.use(
       // console.log("jwtDecoded", decoded);
       const timestampInSeconds = Math.floor(new Date().getTime() / 1000);
       if (timestampInSeconds > decoded.exp) {
-        // aToken
+        localStorage.removeItem("token"); //过期移除token
         ElNotification({
           title: "登录过期",
           message: "登录状态过期，请重新登录！",
           type: "error",
         });
         localStorage.removeItem("token");
-        localStorage.removeItem("nickname");
         // TODO:根据配置跳转
-        location.href = "localhost:8111/login";
-        // router.push({
-        //   path: "/login",
-        // });
+        // location.href = "localhost:8111/login";
+        location.reload();
         return;
       }
       config.headers["token"] = token; // token
